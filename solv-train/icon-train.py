@@ -4,6 +4,7 @@ import numpy as np
 import os
 from matplotlib import pyplot as plt
 
+# tf.compat.v1.enable_eager_execution()
 tf.enable_eager_execution()
 
 train_txt = './icon-train-map.txt'
@@ -58,7 +59,7 @@ else:
 model = tf.keras.models.Sequential([
     tf.keras.layers.Flatten(),
     tf.keras.layers.Dense(512, activation="relu"),
-    tf.keras.layers.Dense(236, activation="softmax")    # 共236个icon
+    tf.keras.layers.Dense(236, activation="softmax")    # 共236种icon
 ])
 
 model.compile(optimizer='adam',
@@ -76,7 +77,8 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
     save_best_only=True
 )
 
-history = model.fit(x_train, y_train, batch_size=32, epochs=500, validation_split=0.2, validation_freq=2, callbacks=[cp_callback])
+# 未加形变的图像处理
+history = model.fit(x_train, y_train, batch_size=32, epochs=200, validation_split=0.2, validation_freq=2, callbacks=[cp_callback])
 model.summary()
 
 # 输出神经网络参数

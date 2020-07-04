@@ -2,10 +2,11 @@ import tensorflow as tf
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 tf.enable_eager_execution()
 
-model_savepath = './solv-train/icon.ckpt'
+model_savepath = './models/solv-train/icon.ckpt'
 
 model = tf.keras.models.Sequential([
     tf.keras.layers.Flatten(),
@@ -15,7 +16,8 @@ model = tf.keras.models.Sequential([
 
 model.load_weights(model_savepath)
 
-image_path = r"D:\code\python\study\iconICON_Location&&3019.png"
+image_path = "./test.png"
+
 img = Image.open(image_path)
 img = img.resize((24, 24), Image.ANTIALIAS)
 img_arr = np.array(img.convert('L'))
