@@ -3,9 +3,10 @@ from PIL import Image
 import numpy as np
 import os
 from matplotlib import pyplot as plt
+from iconModel import IconModel
 
 # tf.compat.v1.enable_eager_execution()
-tf.enable_eager_execution()
+# tf.enable_eager_execution()
 
 train_txt = './icon-train-map.txt'
 x_train_savepath = './datas/solv_icon_x_train.npy'
@@ -56,12 +57,10 @@ else:
     np.save(x_train_savepath, x_train_save)
     np.save(y_train_savepath, y_train)
 
-# 定义全连接网络
-model = tf.keras.models.Sequential([
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(512, activation="relu"),
-    tf.keras.layers.Dense(236, activation="softmax")    # 共236种icon
-])
+x_train = x_train.reshape(x_train.shape[0], 24, 24, 1)
+
+# 定义cnn网络
+model = IconModel()
 
 model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
@@ -79,7 +78,7 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
 )
 
 # 未加形变的图像处理
-history = model.fit(x_train, y_train, batch_size=32, epochs=200, validation_split=0.2, validation_freq=2, callbacks=[cp_callback])
+history = model.fit(x_train, y_train, batch_size=32, epochs=100, validation_split=0.3, validation_freq=2, callbacks=[cp_callback])
 model.summary()
 
 # 输出神经网络参数
@@ -105,7 +104,9 @@ img_arr = np.array(img.convert('L'))
 #             img_arr[i][j] = 0
 
 img_arr = img_arr / 255.0
-x_predict = img_arr[tf.newaxis, ...]
+
+# x_predict = img_arr[tf.newaxis, ..., 1]
+x_predict = img_arr.reshape(1, 24, 24, 1)
 result = model.predict(x_predict)
 
 pred = tf.argmax(result, axis=1)

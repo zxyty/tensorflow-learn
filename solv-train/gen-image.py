@@ -12,3 +12,5 @@ image_gen_train = ImageDataGenerator(
     zoom_range=0.5  # 将图像随机缩放阈量50％
 )
 image_gen_train.fit(x_train)
+
+

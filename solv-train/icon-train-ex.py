@@ -3,9 +3,11 @@ from PIL import Image
 import numpy as np
 import os
 from matplotlib import pyplot as plt
+from iconModel import IconModel
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 # tf.compat.v1.enable_eager_execution()
-tf.enable_eager_execution()
+# tf.enable_eager_execution()
 
 train_txt = './icon-train-map.txt'
 x_train_savepath = './datas/solv_icon_x_train.npy'
@@ -35,12 +37,6 @@ def generateds(txt):
     y_ = np.array(y_)
     y_ = y_.astype(np.int64)
 
-    np.random.seed(116)
-    np.random.shuffle(x)
-    np.random.seed(116)
-    np.random.shuffle(y_)
-    tf.compat.v1.random.set_random_seed(116)
-
     return x, y_
 
 if os.path.exists(x_train_savepath) and os.path.exists(y_train_savepath):
@@ -56,12 +52,33 @@ else:
     np.save(x_train_savepath, x_train_save)
     np.save(y_train_savepath, y_train)
 
-# 定义全连接网络
-model = tf.keras.models.Sequential([
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(512, activation="relu"),
-    tf.keras.layers.Dense(236, activation="softmax")    # 共236种icon
-])
+np.random.seed(116)
+np.random.shuffle(x_train)
+np.random.seed(116)
+np.random.shuffle(y_train)
+tf.random.set_seed(116)
+
+x_data = x_train[:-798]
+y_data = y_train[:-798]
+x_test = x_train[-798:]
+y_test = y_train[-798:]
+
+x_data = x_data.reshape(x_data.shape[0], 24, 24, 1)
+x_test = x_test.reshape(x_test.shape[0], 24, 24, 1)
+
+image_gen_train = ImageDataGenerator(
+    rescale=1. / 255.,  # 如为图像，分母为255时，可归至0～1
+    rotation_range=5,  # 随机45度旋转
+    width_shift_range=.15,  # 宽度偏移
+    height_shift_range=.15,  # 高度偏移
+    horizontal_flip=False,  # 水平翻转
+    zoom_range=0.2  # 将图像随机缩放阈量50％
+)
+
+image_gen_train.fit(x_data)
+
+# 定义cnn网络
+model = IconModel()
 
 model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
@@ -79,7 +96,7 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
 )
 
 # 未加形变的图像处理
-history = model.fit(x_train, y_train, batch_size=32, epochs=200, validation_split=0.2, validation_freq=2, callbacks=[cp_callback])
+history = model.fit(image_gen_train.flow(x_data, y_data, batch_size=32), epochs=200, validation_data=(x_test, y_test), callbacks=[cp_callback])
 model.summary()
 
 # 输出神经网络参数
@@ -105,7 +122,7 @@ img_arr = np.array(img.convert('L'))
 #             img_arr[i][j] = 0
 
 img_arr = img_arr / 255.0
-x_predict = img_arr[tf.newaxis, ...]
+x_predict = img_arr.reshape(1, 24, 24, 1)
 result = model.predict(x_predict)
 
 pred = tf.argmax(result, axis=1)
