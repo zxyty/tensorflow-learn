@@ -8,22 +8,26 @@ from iconModel import IconModel
 # tf.compat.v1.enable_eager_execution()
 # tf.enable_eager_execution()
 
+icons_dir_path = "d:/code/python/tensorflow-learn/solv-train/icons"
 train_txt = './icon-train-map.txt'
 x_train_savepath = './datas/solv_icon_x_train.npy'
 y_train_savepath = './datas/solv_icon_y_train.npy'
 model_savepath = './models/solv-train/icon.ckpt'
+model_savepath_export = './models/solv-train/saved'
 
 def generateds(txt):
     f = open(txt, 'r')
     contents = f.readlines()
+    
     # contents = f.readlines()[0:194]
     f.close()
 
     x, y_ = [], []
     for content in contents:
         value = content.split()
-        img_path = value[0]
+        img_path = icons_dir_path + "/" + value[0]
         img = Image.open(img_path)
+        img = img.resize((28, 28), Image.ANTIALIAS)
         img = np.array(img.convert('L'))
 
         img = img / 255.
@@ -48,16 +52,16 @@ if os.path.exists(x_train_savepath) and os.path.exists(y_train_savepath):
     print('-------------Load Datasets-----------------')
     x_train_save = np.load(x_train_savepath)
     y_train = np.load(y_train_savepath)
-    x_train = np.reshape(x_train_save, (len(x_train_save), 24, 24))
+    x_train = np.reshape(x_train_save, (len(x_train_save), 28, 28))
 else:
     print('-------------Generate Datasets-----------------')
     x_train, y_train = generateds(train_txt)
     print('-------------Save Datasets-----------------')
-    x_train_save = np.reshape(x_train, (len(x_train), 24, 24))
+    x_train_save = np.reshape(x_train, (len(x_train), 28, 28))
     np.save(x_train_savepath, x_train_save)
     np.save(y_train_savepath, y_train)
 
-x_train = x_train.reshape(x_train.shape[0], 24, 24, 1)
+x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
 
 # 定义cnn网络
 model = IconModel()
@@ -78,8 +82,10 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
 )
 
 # 未加形变的图像处理
-history = model.fit(x_train, y_train, batch_size=32, epochs=100, validation_split=0.3, validation_freq=2, callbacks=[cp_callback])
+history = model.fit(x_train, y_train, batch_size=32, epochs=10, validation_split=0.3, validation_freq=2, callbacks=[cp_callback])
 model.summary()
+
+model.save(model_savepath_export, save_format="tf")
 
 # 输出神经网络参数
 file = open('./weights.txt', 'w')
@@ -91,9 +97,9 @@ file.close()
 
 ###############################################    show   ###############################################
 
-image_path = "./icons/iconICON_Location&&3019.png"
+image_path = "./icons/iconICON_Alert1&&5372.png"
 img = Image.open(image_path)
-img = img.resize((24, 24), Image.ANTIALIAS)
+img = img.resize((28, 28), Image.ANTIALIAS)
 img_arr = np.array(img.convert('L'))
 
 # for i in range(24):
@@ -106,7 +112,7 @@ img_arr = np.array(img.convert('L'))
 img_arr = img_arr / 255.0
 
 # x_predict = img_arr[tf.newaxis, ..., 1]
-x_predict = img_arr.reshape(1, 24, 24, 1)
+x_predict = img_arr.reshape(1, 28, 28, 1)
 result = model.predict(x_predict)
 
 pred = tf.argmax(result, axis=1)
@@ -133,3 +139,13 @@ plt.plot(val_loss, label='Validation Loss')
 plt.title('Training and Validation Loss')
 plt.legend()
 plt.show()
+
+
+# 转换模型
+# tensorflowjs_converter \
+#     --input_format=tf_saved_model \
+#     --output_format=tfjs_graph_model \
+#     --signature_name=serving_default \
+#     --saved_model_tags=serve \
+#     D:/code/python/tensorflow-learn/solv-train/models/solv-train/saved \
+#     D:/code/python/tensorflow-learn/solv-train/models/solv-train/convert
