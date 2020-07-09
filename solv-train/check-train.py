@@ -13,18 +13,26 @@ model = IconModel()
 
 model.load_weights(model_savepath)
 
-image_path = "./test-icons/iconBrowser_Chrome&&2319.png"
+image_path = "./test-icons/Snipaste_2020-07-06_16-09-46.png"
 
 img = Image.open(image_path)
-img = img.resize((24, 24), Image.ANTIALIAS)
+img = img.resize((28, 28), Image.ANTIALIAS)
 img_arr = np.array(img.convert('L'))
 
 img_arr = img_arr / 255.
 # x_predict = img_arr[tf.newaxis, ...]
-x_predict = img_arr.reshape(1, 24, 24, 1)
+x_predict = img_arr.reshape(1, 28, 28, 1)
 result = model.predict(x_predict)
 
 pred = tf.argmax(result, axis=1)
 
 print('\n')
+
 print(pred)
+
+# np.argsort(np.ndarray.flatten(result))[-1:-10]
+top10PredIndex = np.argsort(np.ndarray.flatten(result))[-10::, ].tolist()
+top10PredIndex.reverse()
+
+print(top10PredIndex)
+

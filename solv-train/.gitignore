@@ -1,3 +1,4 @@
 icons/*.png
 models/*
 datas/*.npy
+test-icons/*.png

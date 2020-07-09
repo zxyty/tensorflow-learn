@@ -232,5 +232,4 @@ iconSTELLRlogomini 230
 iconSyncAutoTask_UnMap 231
 iconSyncAutoTask 232
 iconsynnexlogo_rgba 233
-iconsynnexlogo_white 234
-iconsynnexlogo 235
+iconsynnexlogo 234
