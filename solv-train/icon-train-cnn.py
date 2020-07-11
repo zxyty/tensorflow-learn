@@ -8,7 +8,7 @@ from iconModel import IconModel
 # tf.compat.v1.enable_eager_execution()
 # tf.enable_eager_execution()
 
-icons_dir_path = "d:/code/python/tensorflow-learn/solv-train/icons"
+icons_dir_path = "./icons"
 train_txt = './icon-train-map.txt'
 x_train_savepath = './datas/solv_icon_x_train.npy'
 y_train_savepath = './datas/solv_icon_y_train.npy'
@@ -82,7 +82,7 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
 )
 
 # 未加形变的图像处理
-history = model.fit(x_train, y_train, batch_size=32, epochs=10, validation_split=0.3, validation_freq=2, callbacks=[cp_callback])
+history = model.fit(x_train, y_train, batch_size=32, epochs=200, validation_split=0.3, validation_freq=2, callbacks=[cp_callback])
 model.summary()
 
 model.save(model_savepath_export, save_format="tf")
@@ -147,5 +147,5 @@ plt.show()
 #     --output_format=tfjs_graph_model \
 #     --signature_name=serving_default \
 #     --saved_model_tags=serve \
-#     D:/code/python/tensorflow-learn/solv-train/models/solv-train/saved \
-#     D:/code/python/tensorflow-learn/solv-train/models/solv-train/convert
+#     D:/code/python/tensorflow/tensorflow-learn/solv-train/models/solv-train/saved \
+#     D:/code/python/tensorflow/tensorflow-learn/solv-train/models/solv-train/convert
